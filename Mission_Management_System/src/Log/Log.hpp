@@ -16,12 +16,10 @@ namespace Mission_Management {
 		static std::shared_ptr<spdlog::logger> s_Logger;
 	};
 
-#define MM_LOG_TRACE(...)    ::Mission_Management::Log::GetLogger()->trace(__VA_ARGS__)
-#define MM_LOG_INFO(...)     ::Mission_Management::Log::GetLogger()->info(__VA_ARGS__)
-#define MM_LOG_WARN(...)     ::Mission_Management::Log::GetLogger()->warn(__VA_ARGS__)
-#define MM_LOG_ERROR(...)    ::Mission_Management::Log::GetLogger()->error(__VA_ARGS__)
-#define MM_LOG_CRITICAL(...) ::Mission_Management::Log::GetLogger()->critical(__VA_ARGS__)
-#define MM_LOG_FATAL(...)    ::Mission_Management::Log::GetLogger()->critical(__VA_ARGS__)
-#define MM_LOG_DEBUG(...)    ::Mission_Management::Log::GetLogger()->debug(__VA_ARGS__)
+#define LOG_CORE_INFO(fmt, ...)    ::Mission_Management::Log::GetLogger()->info("[Core] " fmt, ##__VA_ARGS__)
+#define LOG_SENSOR_INFO(fmt, ...)  ::Mission_Management::Log::GetLogger()->info("[Sensor] " fmt, ##__VA_ARGS__)
+#define LOG_FUSION_INFO(fmt, ...)  ::Mission_Management::Log::GetLogger()->info("[Fusion] " fmt, ##__VA_ARGS__)
+#define LOG_MISSION_INFO(fmt, ...) ::Mission_Management::Log::GetLogger()->info("[Mission] " fmt, ##__VA_ARGS__)
+#define LOG_UI_INFO(fmt, ...)      ::Mission_Management::Log::GetLogger()->info("[UI] " fmt, ##__VA_ARGS__)
 
 }

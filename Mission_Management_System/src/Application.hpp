@@ -1,5 +1,8 @@
 #pragma once
 
+#include "Log/Log.hpp"
+#include "core/ModuleManager.hpp"
+
 namespace Mission_Management {
 
 	class Application {
@@ -7,6 +10,11 @@ namespace Mission_Management {
 		Application();
 		virtual ~Application();
 
-		void Run();
+		virtual void Run();
+		void Stop();
+
+	private:
+		ModuleManager m_ModuleManager;
+		bool m_Running = false;
 	};
 }

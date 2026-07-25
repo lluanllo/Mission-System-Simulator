@@ -1,17 +1,48 @@
-#include "Core/Mission_management.hpp"
+#include "Application.hpp"
+#include "core/DummyModules.hpp"
+#include <thread>
+#include <chrono>
 
-Mission_Management::Application::Application() {
-	Mission_Management::Log::Init();
-	MM_LOG_INFO("Logger Initialized");
-	MM_LOG_DEBUG("Mission Management Application Initialized");
-}
+namespace Mission_Management {
 
-Mission_Management::Application::~Application() {
-	// Cleanup code here
-}
+	Application::Application() {
+		Log::Init();
+		LOG_CORE_INFO("Initializing Application...");
 
-void Mission_Management::Application::Run() {
-	while (true) {
+		// Register testing modules
+		m_ModuleManager.AddModule(std::make_shared<DummySensorModule>());
+		m_ModuleManager.AddModule(std::make_shared<DummyUIModule>());
 
+		m_ModuleManager.Init();
 	}
+
+	Application::~Application() {
+	}
+
+	void Application::Run() {
+		LOG_CORE_INFO("Starting Application...");
+		m_ModuleManager.Start();
+
+		m_Running = true;
+		int simulatedFrames = 0;
+
+		while (m_Running) {
+			m_ModuleManager.Update(0.016); // Simulate ~60FPS delta time
+			
+			// Just to prevent infinite loop for testing
+			std::this_thread::sleep_for(std::chrono::milliseconds(16));
+			if (++simulatedFrames >= 3) {
+				Stop();
+			}
+		}
+
+		LOG_CORE_INFO("Stopping Application...");
+		m_ModuleManager.Stop();
+		m_ModuleManager.Shutdown();
+	}
+
+	void Application::Stop() {
+		m_Running = false;
+	}
+
 }
