@@ -34,11 +34,12 @@ project "Mission_Management_System"
 	}
 
 	includedirs {
+		"%{prj.name}/src",
 		"vendor/spdlog/include",
 	}
 
 	filter "system:windows"
-		cppdialect "C++14"
+		cppdialect "C++17"
 		staticruntime "On"
 		systemversion "latest"
 
