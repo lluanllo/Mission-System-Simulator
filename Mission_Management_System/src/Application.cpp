@@ -2,12 +2,10 @@
 #include <thread>
 #include <chrono>
 
-namespace Mission_Management {
+#include "sensors/RadarModule.hpp"
+#include "fusion/FusionModule.hpp"
 
-	struct TestEvent : Core::TypedEvent<TestEvent> {
-		int value;
-		TestEvent(int v) : value(v) {}
-	};
+namespace Mission_Management {
 
 	Application::Application()
 		: m_Context(m_EventBus),
@@ -16,20 +14,8 @@ namespace Mission_Management {
 		Log::Init();
 		LOG_CORE_INFO("Initializing Application...");
 
-		// Register testing modules
-		// m_ModuleManager.AddModule(Core::CreateRef<Sensors::RadarModule>());
-		// m_ModuleManager.AddModule(Core::CreateRef<Fusion::FusionModule>());
-
-		m_EventBus.Subscribe<TestEvent>([](const TestEvent& event) {
-			LOG_CORE_INFO("Subscriber A received TestEvent: {}", event.value);
-		});
-
-		m_EventBus.Subscribe<TestEvent>([](const TestEvent& event) {
-			LOG_CORE_INFO("Subscriber B received TestEvent: {}", event.value);
-		});
-
-		LOG_CORE_INFO("Publishing TestEvent(42)...");
-		m_EventBus.Publish(TestEvent{ 42 });
+		m_ModuleManager.AddModule(Core::CreateRef<Sensors::RadarModule>());
+		m_ModuleManager.AddModule(Core::CreateRef<Fusion::FusionModule>());
 
 		m_ModuleManager.Init();
 	}

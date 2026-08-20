@@ -2,11 +2,7 @@
 
 #include "core/IModule.hpp"
 #include "core/ApplicationContext.hpp"
-#include "common/tracking/Track.hpp"
 #include "common/events/SensorDataReceivedEvent.hpp"
-
-#include <unordered_map>
-#include <cstdint>
 
 namespace Mission_Management {
 namespace Fusion {
@@ -24,7 +20,6 @@ namespace Fusion {
         void OnSensorDataReceived(const Common::SensorDataReceivedEvent& event);
 
         Core::ApplicationContext* m_Context = nullptr;
-        std::unordered_map<std::uint64_t, Common::Track> m_Tracks;
     };
 
 } }
