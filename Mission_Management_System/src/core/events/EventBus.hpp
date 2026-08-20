@@ -9,95 +9,65 @@
 #include <vector>
 
 #include "core/events/Event.hpp"
+#include "core/core.hpp"
 
 namespace Mission_Management {
 namespace Core {
 
-    class IEventHandler {
+    template<typename EventType>
+    class EventWrapper : public Event {
     public:
-        virtual ~IEventHandler() = default;
-        virtual void Execute(const Event& event) = 0;
+        explicit EventWrapper(EventType e)
+            : event(std::move(e))
+        {
+        }
+
+        EventType event;
+
+        std::type_index GetType() const override {
+            return typeid(EventType);
+        }
     };
 
-    template<typename T>
-    class EventHandler : public IEventHandler {
+    class EventBus {
     public:
-        using HandlerFunc = std::function<void(const T&)>;
+        template<typename EventType>
+        using EventHandler = std::function<void(const EventType&)>;
 
-        explicit EventHandler(HandlerFunc handler) : m_Handler(handler) {}
-
-        void Execute(const Event& event) override {
-            if (event.GetType() == typeid(T)) {
-                // static_cast safely casts down to T since typeid matches
-                m_Handler(static_cast<const T&>(event));
-            }
-        }
-    private:
-        HandlerFunc m_Handler;
-    };
-
-    class EventBus
-    {
-    public:
-        template<typename T>
-        using Handler = std::function<void(const T&)>;
-
-        template<typename T>
-        void Subscribe(Handler<T> handler)
-        {
-            std::lock_guard<std::mutex> lock(m_HandlersMutex);
-            m_Handlers[typeid(T)].push_back(std::make_unique<EventHandler<T>>(handler));
+        template<typename EventType>
+        void Subscribe(EventHandler<EventType> handler) {
+            std::lock_guard<std::mutex> lock(m_SubscriptionMutex);
+            m_Subscribers[typeid(EventType)].push_back([handler](const Event& baseEvent) {
+                const auto& wrapper = static_cast<const EventWrapper<EventType>&>(baseEvent);
+                handler(wrapper.event);
+            });
         }
 
-        template<typename T>
-        void Publish(const T& event)
-        {
+        template<typename EventType>
+        void Publish(EventType event) {
+            auto queuedEvent = CreateScope<EventWrapper<EventType>>(std::move(event));
+
             std::lock_guard<std::mutex> lock(m_QueueMutex);
-            m_EventQueue.push(std::make_unique<T>(event));
+            m_EventQueue.push({ std::move(queuedEvent) });
         }
 
-        void Process()
-        {
-            std::queue<std::unique_ptr<Event>> queueCopy;
-            {
-                std::lock_guard<std::mutex> lock(m_QueueMutex);
-                std::swap(queueCopy, m_EventQueue);
-            }
+        void Process();
 
-            while (!queueCopy.empty()) {
-                auto event = std::move(queueCopy.front());
-                queueCopy.pop();
-
-                std::vector<IEventHandler*> handlersToCall;
-                {
-                    std::lock_guard<std::mutex> lock(m_HandlersMutex);
-                    auto it = m_Handlers.find(event->GetType());
-                    if (it != m_Handlers.end()) {
-                        for (auto& handler : it->second) {
-                            handlersToCall.push_back(handler.get());
-                        }
-                    }
-                }
-
-                for (auto* handler : handlersToCall) {
-                    handler->Execute(*event);
-                }
-            }
-        }
-
-        void Clear()
-        {
-            std::lock_guard<std::mutex> lock(m_QueueMutex);
-            std::queue<std::unique_ptr<Event>> empty;
-            std::swap(m_EventQueue, empty);
-        }
+        void Clear();
 
     private:
+        struct QueuedEvent {
+            Scope<Event> event;
+        };
+
+        using Subscription = std::function<void(const Event&)>;
+
+        std::unordered_map<std::type_index, std::vector<Subscription>> m_Subscribers;
+        std::queue<QueuedEvent> m_EventQueue;
+
         std::mutex m_QueueMutex;
-        std::queue<std::unique_ptr<Event>> m_EventQueue;
-
-        std::mutex m_HandlersMutex;
-        std::unordered_map<std::type_index, std::vector<std::unique_ptr<IEventHandler>>> m_Handlers;
+        std::mutex m_SubscriptionMutex;
     };
 
-} }
+}
+}
