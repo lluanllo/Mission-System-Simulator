@@ -1,13 +1,20 @@
 #include "ModuleManager.hpp"
+#include "ApplicationContext.hpp"
 
 namespace Mission_Management {
-    void ModuleManager::AddModule(std::shared_ptr<IModule> module) {
+namespace Core {
+
+    ModuleManager::ModuleManager(ApplicationContext& context)
+        : m_Context(context) {
+    }
+
+    void ModuleManager::AddModule(Ref<IModule> module) {
         m_Modules.push_back(module);
     }
 
     void ModuleManager::Init() {
         for (auto& module : m_Modules) {
-            module->OnInit();
+            module->OnInit(m_Context);
         }
     }
 
@@ -34,4 +41,4 @@ namespace Mission_Management {
             module->OnShutdown();
         }
     }
-}
+} }

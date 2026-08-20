@@ -2,6 +2,8 @@
 
 #include "core/IModule.hpp"
 #include "core/ApplicationContext.hpp"
+#include <thread>
+#include <atomic>
 
 namespace Mission_Management {
 namespace Sensors {
@@ -16,8 +18,11 @@ namespace Sensors {
         void OnShutdown() override;
 
     private:
+        void RunSimulation();
+
         Core::ApplicationContext* m_Context = nullptr;
-        double m_Timer = 0.0;
+        std::atomic<bool> m_Running{false};
+        std::thread m_WorkerThread;
     };
 
 } }

@@ -85,6 +85,13 @@ namespace Core {
             }
         }
 
+        void Clear()
+        {
+            std::lock_guard<std::mutex> lock(m_QueueMutex);
+            std::queue<std::unique_ptr<Event>> empty;
+            std::swap(m_EventQueue, empty);
+        }
+
     private:
         std::mutex m_QueueMutex;
         std::queue<std::unique_ptr<Event>> m_EventQueue;

@@ -1,4 +1,5 @@
 #include "FusionModule.hpp"
+#include "FusionModule.hpp"
 #include "Log/Log.hpp"
 #include "core/events/EventBus.hpp"
 #include "common/events/TrackUpdatedEvent.hpp"

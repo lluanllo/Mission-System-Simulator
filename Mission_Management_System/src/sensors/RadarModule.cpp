@@ -13,12 +13,18 @@ namespace Sensors {
 
     void RadarModule::OnStart() {
         LOG_SENSOR_INFO("Radar started");
+        m_Running = true;
+        m_WorkerThread = std::thread(&RadarModule::RunSimulation, this);
     }
 
     void RadarModule::OnUpdate(double dt) {
-        m_Timer += dt;
-        if (m_Timer >= 0.5) { // exactly 500 ms simulation
-            m_Timer = 0.0;
+        // Nothing here, handled by thread
+    }
+
+    void RadarModule::RunSimulation() {
+        while (m_Running) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            if (!m_Running) break;
 
             Common::RadarContact radarContact{
                 { 40.4168, -3.7038, 5000.0 }, // Position
@@ -44,6 +50,10 @@ namespace Sensors {
 
     void RadarModule::OnStop() {
         LOG_SENSOR_INFO("Radar stopped");
+        m_Running = false;
+        if (m_WorkerThread.joinable()) {
+            m_WorkerThread.join();
+        }
     }
 
     void RadarModule::OnShutdown() {

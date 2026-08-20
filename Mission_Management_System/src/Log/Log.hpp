@@ -3,6 +3,7 @@
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/sinks/basic_file_sink.h"
+#include "core/core.hpp"
 
 namespace Mission_Management {
 
@@ -10,10 +11,10 @@ namespace Mission_Management {
 	public:
 		static void Init();
 
-		inline static std::shared_ptr<spdlog::logger>& GetLogger() { return s_Logger; }
+		inline static Core::Ref<spdlog::logger>& GetLogger() { return s_Logger; }
 
 	private:
-		static std::shared_ptr<spdlog::logger> s_Logger;
+		static Core::Ref<spdlog::logger> s_Logger;
 	};
 
 #define LOG_CORE_INFO(fmt, ...)    ::Mission_Management::Log::GetLogger()->info("[Core] " fmt, ##__VA_ARGS__)
