@@ -4,6 +4,7 @@
 
 #include "sensors/RadarModule.hpp"
 #include "fusion/FusionModule.hpp"
+#include "mission/MissionModule.hpp"
 
 namespace Mission_Management {
 
@@ -16,6 +17,7 @@ namespace Mission_Management {
 
 		m_ModuleManager.AddModule(Core::CreateRef<Sensors::RadarModule>());
 		m_ModuleManager.AddModule(Core::CreateRef<Fusion::FusionModule>());
+		m_ModuleManager.AddModule(Core::CreateRef<Mission::MissionModule>());
 
 		m_ModuleManager.Init();
 	}
