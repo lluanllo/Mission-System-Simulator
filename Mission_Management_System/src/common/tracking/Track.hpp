@@ -26,6 +26,8 @@ namespace Common {
 
         TrackState trackState;
 
+        std::uint32_t updateCount = 0;   // contactos consecutivos asociado -> Confirmed
+
         SensorType lastSensor;
 
         Timestamp lastUpdate;

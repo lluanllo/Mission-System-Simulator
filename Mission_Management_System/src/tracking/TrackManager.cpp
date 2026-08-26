@@ -1,51 +1,69 @@
 #include "TrackManager.hpp"
-#include <cmath>
+#include "common/sensor/SensorObservation.hpp"
 
 namespace Mission_Management {
 namespace Tracking {
 
-    Common::Track TrackManager::ProcessRadarContact(const Common::RadarContact& contact)
+    Common::Track TrackManager::Process(
+        const Common::SensorData& data,
+        const TrackCorrelator& correlator)
     {
-        for (auto& pair : m_Tracks)
+        auto match = correlator.FindMatch(data, m_Tracks);
+
+        if (match.has_value())
         {
-            auto& track = pair.second;
-            const double latDiff = std::abs(track.position.latitude - contact.position.latitude);
-            const double lonDiff = std::abs(track.position.longitude - contact.position.longitude);
-
-            if (latDiff < 0.01 && lonDiff < 0.01)
-            {
-                track.position = contact.position;
-                track.velocity = contact.velocity;
-                track.lastSensor = Common::SensorType::Radar;
-                track.lastUpdate = contact.timestamp;
-
-                // Varios contactos consecutivos -> Confirmed
-                track.trackState = Common::TrackState::Confirmed;
-
-                // Se construye la estela temporal del track
-                track.history.push_back({ contact.position, contact.timestamp });
-
-                return track;
-            }
+            auto& track = m_Tracks.at(*match);
+            UpdateTrack(track, data);
+            return track;
         }
 
-        Common::Track track{};
-
-        track.id = GenerateTrackId();
-        track.position = contact.position;
-        track.velocity = contact.velocity;
-        track.identification = Common::Identification::Unknown;
-        track.threatLevel = Common::ThreatLevel::Unknown;
-        track.trackState = Common::TrackState::Tentative;
-        track.lastSensor = Common::SensorType::Radar;
-        track.lastUpdate = contact.timestamp;
-
-        // Primer punto de la estela temporal
-        track.history.push_back({ contact.position, contact.timestamp });
-
+        auto track = CreateTrack(data);
         m_Tracks.emplace(track.id, track);
-
         return track;
+    }
+
+    Common::Track TrackManager::CreateTrack(const Common::SensorData& data)
+    {
+        const Common::Position& pos = Common::GetPosition(data);
+        const Common::Velocity& vel = Common::GetVelocity(data);
+
+        Common::Track t{};
+        t.id = GenerateTrackId();
+        t.position = pos;
+        t.velocity = vel;
+        t.identification = Common::Identification::Unknown;
+        t.threatLevel = Common::ThreatLevel::Unknown;
+        t.trackState = Common::TrackState::Tentative;
+        t.updateCount = 1;
+        t.lastSensor = data.type;
+        t.lastUpdate = data.type == Common::SensorType::Radar ? data.payload.radar.timestamp
+            : data.type == Common::SensorType::ADSB ? data.payload.adsb.timestamp
+            : data.payload.ais.timestamp;
+        t.history.push_back({ pos, t.lastUpdate });
+
+        return t;
+    }
+
+    void TrackManager::UpdateTrack(Common::Track& track, const Common::SensorData& data)
+    {
+        const Common::Position& pos = Common::GetPosition(data);
+        const Common::Velocity& vel = Common::GetVelocity(data);
+
+        track.position = pos;
+        track.velocity = vel;
+        track.lastSensor = data.type;
+        track.lastUpdate = data.type == Common::SensorType::Radar ? data.payload.radar.timestamp
+            : data.type == Common::SensorType::ADSB ? data.payload.adsb.timestamp
+            : data.payload.ais.timestamp;
+
+        // Doctrina de estado (prototipo, no doctrina operacional real):
+        // 1 contacto => Tentative, >= 3 => Confirmed
+        track.updateCount++;
+        if (track.updateCount >= 3)
+            track.trackState = Common::TrackState::Confirmed;
+
+        // Estela temporal (track trail)
+        track.history.push_back({ pos, track.lastUpdate });
     }
 
     const std::unordered_map<std::uint64_t, Common::Track>& TrackManager::GetTracks() const

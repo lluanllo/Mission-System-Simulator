@@ -5,6 +5,7 @@
 
 #include "common/tracking/Track.hpp"
 #include "common/sensor/RadarContact.hpp"
+#include "tracking/TrackCorrelator.hpp"
 
 namespace Mission_Management {
 namespace Tracking {
@@ -12,11 +13,18 @@ namespace Tracking {
     class TrackManager
     {
     public:
-        Common::Track ProcessRadarContact(const Common::RadarContact& contact);
+        // Punto de entrada único del pipeline.
+        // correlator decide "¿a qué track?"; el manager decide "¿crear o actualizar?".
+        Common::Track Process(
+            const Common::SensorData& data,
+            const TrackCorrelator& correlator);
 
         const std::unordered_map<std::uint64_t, Common::Track>& GetTracks() const;
 
     private:
+        Common::Track CreateTrack(const Common::SensorData& data);
+        void          UpdateTrack(Common::Track& track, const Common::SensorData& data);
+
         std::uint64_t GenerateTrackId();
 
         std::unordered_map<std::uint64_t, Common::Track> m_Tracks;
