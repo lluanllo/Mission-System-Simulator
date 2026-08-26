@@ -24,11 +24,15 @@ namespace Sensors {
         m_Accumulator = 0.0;
 
         Common::RadarContact contact{
-            { 40.4168, -3.7038, 5000.0 }, // Position
-            { 250.0, 90.0, 0.0 },         // Velocity
-            12.5,                         // RCS
-            std::chrono::steady_clock::now() // Timestamp
+            { m_TargetLatitude, m_TargetLongitude, m_TargetAltitude }, // Position
+            { 250.0, 90.0, 0.0 },                                      // Velocity (250 kt, rumbo 90°)
+            12.5,                                                     // RCS
+            std::chrono::steady_clock::now()                         // Timestamp
         };
+
+        // Avance del objetivo entre barridos (magnitudes de prueba, no cinemática real aún)
+        m_TargetLatitude += 0.0001;
+        m_TargetLongitude += 0.0002;
 
         Common::SensorData data{
             Common::SensorType::Radar,

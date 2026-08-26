@@ -19,6 +19,12 @@ namespace Tracking {
                 track.lastSensor = Common::SensorType::Radar;
                 track.lastUpdate = contact.timestamp;
 
+                // Varios contactos consecutivos -> Confirmed
+                track.trackState = Common::TrackState::Confirmed;
+
+                // Se construye la estela temporal del track
+                track.history.push_back({ contact.position, contact.timestamp });
+
                 return track;
             }
         }
@@ -30,8 +36,12 @@ namespace Tracking {
         track.velocity = contact.velocity;
         track.identification = Common::Identification::Unknown;
         track.threatLevel = Common::ThreatLevel::Unknown;
+        track.trackState = Common::TrackState::Tentative;
         track.lastSensor = Common::SensorType::Radar;
         track.lastUpdate = contact.timestamp;
+
+        // Primer punto de la estela temporal
+        track.history.push_back({ contact.position, contact.timestamp });
 
         m_Tracks.emplace(track.id, track);
 

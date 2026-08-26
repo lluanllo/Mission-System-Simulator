@@ -12,12 +12,21 @@ namespace Mission {
 
         m_Context->eventBus.Subscribe<Common::TrackUpdatedEvent>(
             [](const Common::TrackUpdatedEvent& event) {
+                Common::TrackState state = event.track.trackState;
+                const char* stateName =
+                    (state == Common::TrackState::Tentative) ? "TENTATIVE" :
+                    (state == Common::TrackState::Confirmed) ? "CONFIRMED" :
+                    (state == Common::TrackState::Lost) ? "LOST" : "DROPPED";
+
                 LOG_MISSION_INFO(
-                    "Track {} updated: lat={}, lon={}, altitude={}",
+                    "Track {} [{}] updated | Position: {} , {} | Heading: {} deg | Speed: {} kt | Trail points: {}",
                     event.track.id,
+                    stateName,
                     event.track.position.latitude,
                     event.track.position.longitude,
-                    event.track.position.altitude
+                    event.track.velocity.heading,
+                    event.track.velocity.speed,
+                    event.track.history.size()
                 );
             }
         );
