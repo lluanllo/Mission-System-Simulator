@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdexcept>
+
 #include "common/sensor/SensorData.hpp"
 #include "common/data/Position.hpp"
 #include "common/data/Velocity.hpp"

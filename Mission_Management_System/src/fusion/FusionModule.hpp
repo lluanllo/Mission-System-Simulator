@@ -9,21 +9,20 @@
 namespace Mission_Management {
 namespace Fusion {
 
-    class FusionModule : public Core::IModule
-    {
-    public:
-        void OnInit(Core::ApplicationContext& context) override;
-        void OnStart() override;
-        void OnUpdate(double dt) override;
-        void OnStop() override;
-        void OnShutdown() override;
+    class FusionModule : public Core::IModule {
+        public:
+            void OnInit(Core::ApplicationContext& context) override;
+            void OnStart() override;
+            void OnUpdate(double dt) override;
+            void OnStop() override;
+            void OnShutdown() override;
 
-    private:
-        void OnSensorDataReceived(const Common::SensorDataReceivedEvent& event);
+        private:
+            void OnSensorDataReceived(const Common::SensorDataReceivedEvent& event);
 
-        Core::ApplicationContext* m_Context = nullptr;
-        Tracking::TrackManager m_TrackManager;
-        Tracking::TrackCorrelator m_Correlator{ 5.0 }; // umbral 5 km
+            Core::ApplicationContext* m_Context = nullptr;
+            Tracking::TrackManager m_TrackManager;
+            Tracking::TrackCorrelator m_Correlator{ 5.0 }; // umbral 5 km
     };
 
 } }
