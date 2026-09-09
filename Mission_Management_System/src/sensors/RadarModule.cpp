@@ -16,6 +16,18 @@ namespace Sensors {
     }
 
     void RadarModule::OnUpdate(double dt) {
+        m_ElapsedSeconds += dt;
+
+        if (m_ElapsedSeconds > 3.0)
+        {
+            if (!m_RadarLostLogged)
+            {
+                LOG_SENSOR_INFO("--- RADAR LOST ---");
+                m_RadarLostLogged = true;
+            }
+            return;
+        }
+
         m_Accumulator += dt;
 
         if (m_Accumulator < 0.5)
@@ -39,7 +51,7 @@ namespace Sensors {
             contact
         };
 
-        LOG_SENSOR_INFO("Radar contact generated: lat={}, lon={}, alt={}", 
+        LOG_SENSOR_INFO("Radar contact generated: lat={:.6f}, lon={:.6f}, alt={:.0f}", 
             contact.position.latitude, 
             contact.position.longitude, 
             contact.position.altitude);

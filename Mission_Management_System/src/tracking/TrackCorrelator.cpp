@@ -22,7 +22,10 @@ namespace Tracking {
         for (const auto& pair : tracks)
         {
             const Common::Track& t = pair.second;
-            const double d = Common::ApproximateDistanceKm(t.position, observed);
+            if (t.trackState == Common::TrackState::Dropped)
+                continue;
+
+            const double d = Common::ApproximateDistanceKm(t.predictedPosition, observed);
 
             if (d < m_ThresholdKm && d < bestDist)
             {

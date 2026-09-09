@@ -2,10 +2,11 @@
 
 #include <cstdint>
 #include <unordered_map>
+#include <vector>
 
 #include "common/tracking/Track.hpp"
 #include "common/sensor/RadarContact.hpp"
-#include "common/tracking/TrackPredictor.hpp"
+#include "tracking/TrackPredictor.hpp"
 #include "tracking/TrackCorrelator.hpp"
 
 namespace Mission_Management {
@@ -20,6 +21,8 @@ namespace Tracking {
             const Common::SensorData& data,
             const TrackCorrelator& correlator);
 
+        std::vector<Common::Track> PredictWithoutMeasurement(double deltaTime);
+
         const std::unordered_map<std::uint64_t, Common::Track>& GetTracks() const;
 
     private:
@@ -30,6 +33,8 @@ namespace Tracking {
 
         std::unordered_map<std::uint64_t, Common::Track> m_Tracks;
         std::uint64_t m_NextTrackId = 1;
+        TrackPredictor m_Predictor;
+        double m_PredictionHorizonSeconds = 2.0;
     };
 
 } }

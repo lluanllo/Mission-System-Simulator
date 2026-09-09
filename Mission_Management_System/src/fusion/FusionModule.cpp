@@ -2,6 +2,7 @@
 #include "Log/Log.hpp"
 #include "core/events/EventBus.hpp"
 #include "common/events/TrackUpdatedEvent.hpp"
+#include "common/events/TrackPredictionUpdatedEvent.hpp"
 
 namespace Mission_Management {
 namespace Fusion {
@@ -22,7 +23,16 @@ namespace Fusion {
     }
 
     void FusionModule::OnUpdate(double dt) {
-        // Nothing here yet
+        if (!m_Context)
+            return;
+
+        const auto predictedTracks = m_TrackManager.PredictWithoutMeasurement(dt);
+        for (const auto& track : predictedTracks)
+        {
+            Common::TrackPredictionUpdatedEvent trackEvent;
+            trackEvent.track = track;
+            m_Context->eventBus.Publish(trackEvent);
+        }
     }
 
     void FusionModule::OnStop() {

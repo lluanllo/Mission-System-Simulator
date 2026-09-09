@@ -19,11 +19,13 @@ namespace Mission {
                     (state == Common::TrackState::Lost) ? "LOST" : "DROPPED";
 
                 LOG_MISSION_INFO(
-                    "Track {} [{}] updated | Position: {} , {} | Heading: {} deg | Speed: {} kt | Trail points: {}",
+                    "Track {} [{}] updated | Position: {:.6f}, {:.6f} | Predicted: {:.6f}, {:.6f} | Heading: {:.1f} deg | Speed: {:.1f} kt | Trail points: {}",
                     event.track.id,
                     stateName,
                     event.track.position.latitude,
                     event.track.position.longitude,
+                    event.track.predictedPosition.latitude,
+                    event.track.predictedPosition.longitude,
                     event.track.velocity.heading,
                     event.track.velocity.speed,
                     event.track.history.size()

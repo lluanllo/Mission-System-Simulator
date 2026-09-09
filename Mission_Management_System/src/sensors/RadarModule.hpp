@@ -19,6 +19,8 @@ namespace Sensors {
         private:
             Core::ApplicationContext* m_Context = nullptr;
             double m_Accumulator = 0.0;
+            double m_ElapsedSeconds = 0.0;
+            bool m_RadarLostLogged = false;
 
             // Objetivo simulado (posición que evoluciona en el tiempo)
             double m_TargetLatitude = 40.4168;

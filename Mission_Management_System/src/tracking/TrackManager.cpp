@@ -1,5 +1,9 @@
 #include "TrackManager.hpp"
 #include "common/sensor/SensorObservation.hpp"
+#include "common/data/TimeUtils.hpp"
+
+#include <chrono>
+#include <vector>
 
 namespace Mission_Management {
 namespace Tracking {
@@ -76,11 +80,55 @@ namespace Tracking {
         if (track.updateCount >= 3)
             track.trackState = Common::TrackState::Confirmed;
 
-        // Estela temporal (track trail)
-        TrackPredictor predictor;
-        track.predictedPosition = predictor.Predict(track, timestamp);
         track.lastUpdate = timestamp;
+
+        // Estela temporal (track trail)
         track.history.push_back({ pos, track.lastUpdate });
+
+        track.predictedPosition = m_Predictor.Predict(track, m_PredictionHorizonSeconds);
+    }
+
+    std::vector<Common::Track> TrackManager::PredictWithoutMeasurement(double deltaTime)
+    {
+        const Common::Timestamp now{ std::chrono::steady_clock::now() };
+
+        std::vector<Common::Track> updates;
+        std::vector<std::uint64_t> droppedTrackIds;
+
+        for (auto& pair : m_Tracks)
+        {
+            auto& track = pair.second;
+            track.predictedPosition = m_Predictor.Predict(track, deltaTime);
+
+            const double secondsSinceUpdate = Common::SecondsBetween(track.lastUpdate, now);
+            if (secondsSinceUpdate > 5.0)
+            {
+                track.trackState = Common::TrackState::Dropped;
+                updates.push_back(track);
+                droppedTrackIds.push_back(pair.first);
+                continue;
+            }
+
+            if (secondsSinceUpdate > 2.0)
+            {
+                track.trackState = Common::TrackState::Lost;
+            }
+            else if (track.updateCount >= 3)
+            {
+                track.trackState = Common::TrackState::Confirmed;
+            }
+            else
+            {
+                track.trackState = Common::TrackState::Tentative;
+            }
+
+            updates.push_back(track);
+        }
+
+        for (const std::uint64_t id : droppedTrackIds)
+            m_Tracks.erase(id);
+
+        return updates;
     }
 
     const std::unordered_map<std::uint64_t, Common::Track>& TrackManager::GetTracks() const
