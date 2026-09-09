@@ -4,6 +4,23 @@
 namespace Mission_Management {
 namespace Tracking {
 
+    namespace {
+        Common::Timestamp GetTimestamp(const Common::SensorData& data)
+        {
+            switch (data.type)
+            {
+            case Common::SensorType::Radar:
+                return data.payload.radar.timestamp;
+            case Common::SensorType::ADSB:
+                return data.payload.adsb.timestamp;
+            case Common::SensorType::AIS:
+                return data.payload.ais.timestamp;
+            default:
+                return {};
+            }
+        }
+    }
+
     Common::Track TrackManager::Process(
         const Common::SensorData& data,
         const TrackCorrelator& correlator)
@@ -36,9 +53,8 @@ namespace Tracking {
         t.trackState = Common::TrackState::Tentative;
         t.updateCount = 1;
         t.lastSensor = data.type;
-        t.lastUpdate = data.type == Common::SensorType::Radar ? data.payload.radar.timestamp
-            : data.type == Common::SensorType::ADSB ? data.payload.adsb.timestamp
-            : data.payload.ais.timestamp;
+        t.lastUpdate = GetTimestamp(data);
+        t.predictedPosition = pos;
         t.history.push_back({ pos, t.lastUpdate });
 
         return t;
@@ -52,9 +68,7 @@ namespace Tracking {
         track.position = pos;
         track.velocity = vel;
         track.lastSensor = data.type;
-        track.lastUpdate = data.type == Common::SensorType::Radar ? data.payload.radar.timestamp
-            : data.type == Common::SensorType::ADSB ? data.payload.adsb.timestamp
-            : data.payload.ais.timestamp;
+        const Common::Timestamp timestamp = GetTimestamp(data);
 
         // Doctrina de estado (prototipo, no doctrina operacional real):
         // 1 contacto => Tentative, >= 3 => Confirmed
@@ -63,6 +77,9 @@ namespace Tracking {
             track.trackState = Common::TrackState::Confirmed;
 
         // Estela temporal (track trail)
+        TrackPredictor predictor;
+        track.predictedPosition = predictor.Predict(track, timestamp);
+        track.lastUpdate = timestamp;
         track.history.push_back({ pos, track.lastUpdate });
     }
 

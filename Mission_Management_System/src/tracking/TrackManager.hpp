@@ -5,6 +5,7 @@
 
 #include "common/tracking/Track.hpp"
 #include "common/sensor/RadarContact.hpp"
+#include "common/tracking/TrackPredictor.hpp"
 #include "tracking/TrackCorrelator.hpp"
 
 namespace Mission_Management {

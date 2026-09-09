@@ -19,6 +19,7 @@ namespace Common {
         std::uint64_t id;
 
         Position position;
+        Position predictedPosition;
         Velocity velocity;
 
         Identification identification;
