@@ -2,7 +2,7 @@
 
 namespace Mission_Management {
 
-    std::shared_ptr<spdlog::logger> Log::s_Logger;
+    Core::Ref<spdlog::logger> Log::s_Logger;
 
     void Log::Init() {
         spdlog::set_pattern("%^%v%$");

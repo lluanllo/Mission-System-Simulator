@@ -1,13 +1,18 @@
 #pragma once
 
 #include "IModule.hpp"
+#include "core.hpp"
 #include <vector>
-#include <memory>
 
 namespace Mission_Management {
+namespace Core {
+    class ApplicationContext;
+
     class ModuleManager {
     public:
-        void AddModule(std::shared_ptr<IModule> module);
+        explicit ModuleManager(ApplicationContext& context);
+
+        void AddModule(Ref<IModule> module);
 
         void Init();
         void Start();
@@ -16,6 +21,8 @@ namespace Mission_Management {
         void Shutdown();
 
     private:
-        std::vector<std::shared_ptr<IModule>> m_Modules;
+        ApplicationContext& m_Context;
+        std::vector<Ref<IModule>> m_Modules;
     };
+}
 }

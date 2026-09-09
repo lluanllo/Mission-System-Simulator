@@ -7,9 +7,9 @@
 
 namespace Mission_Management {
 
-    class DummySensorModule : public IModule {
+    class DummySensorModule : public Core::IModule {
     public:
-        void OnInit() override { LOG_SENSOR_INFO("OnInit called."); }
+        void OnInit(Core::ApplicationContext& context) override { LOG_SENSOR_INFO("OnInit called."); }
         void OnStart() override { LOG_SENSOR_INFO("OnStart called."); }
         void OnUpdate(double dt) override { 
             using namespace Mission_Management::Common;
@@ -37,9 +37,9 @@ namespace Mission_Management {
         void OnShutdown() override { LOG_SENSOR_INFO("OnShutdown called."); }
     };
 
-    class DummyUIModule : public IModule {
+    class DummyUIModule : public Core::IModule {
     public:
-        void OnInit() override { LOG_UI_INFO("OnInit called."); }
+        void OnInit(Core::ApplicationContext& context) override { LOG_UI_INFO("OnInit called."); }
         void OnStart() override { LOG_UI_INFO("OnStart called."); }
         void OnUpdate(double dt) override { LOG_UI_INFO("OnUpdate called with dt = {}", dt); }
         void OnStop() override { LOG_UI_INFO("OnStop called."); }
