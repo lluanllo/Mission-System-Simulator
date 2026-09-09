@@ -4,5 +4,14 @@
 
 namespace Mission_Management {
 namespace Common {
-    using Timestamp = std::chrono::steady_clock::time_point;
+    struct Timestamp {
+        using Clock = std::chrono::steady_clock;
+        using TimePoint = Clock::time_point;
+
+        Timestamp() = default;
+        Timestamp(TimePoint value) : time(value) {}
+
+        TimePoint time{};
+    };
+
 } }

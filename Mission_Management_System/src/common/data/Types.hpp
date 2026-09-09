@@ -26,8 +26,4 @@ namespace Mission_Management {
         EOIR
     };
 
-    struct Timestamp {
-        uint64_t Milliseconds;
-    };
-
 }
