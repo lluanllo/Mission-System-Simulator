@@ -10,8 +10,8 @@ namespace Mission_Management {
 namespace Common {
     struct ADSBContact
     {
-        std::string callsign;
         std::string icao24;
+        std::string callsign;
 
         Position position;
         Velocity velocity;

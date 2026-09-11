@@ -2,6 +2,7 @@
 #include "common/sensor/SensorObservation.hpp"
 #include "common/data/TimeUtils.hpp"
 
+#include <algorithm>
 #include <chrono>
 #include <vector>
 
@@ -11,36 +12,48 @@ namespace Tracking {
     namespace {
         Common::Timestamp GetTimestamp(const Common::SensorData& data)
         {
-            switch (data.type)
-            {
-            case Common::SensorType::Radar:
-                return data.payload.radar.timestamp;
-            case Common::SensorType::ADSB:
-                return data.payload.adsb.timestamp;
-            case Common::SensorType::AIS:
-                return data.payload.ais.timestamp;
-            default:
-                return {};
-            }
+            if (const auto* radar = std::get_if<Common::RadarContact>(&data.payload))
+                return radar->timestamp;
+            if (const auto* adsb = std::get_if<Common::ADSBContact>(&data.payload))
+                return adsb->timestamp;
+            if (const auto* ais = std::get_if<Common::AISContact>(&data.payload))
+                return ais->timestamp;
+
+            return {};
         }
     }
 
     Common::Track TrackManager::Process(
         const Common::SensorData& data,
-        const TrackCorrelator& correlator)
+        const CorrelationResult& correlationResult)
     {
-        auto match = correlator.FindMatch(data, m_Tracks);
-
-        if (match.has_value())
+        if (correlationResult.matched)
         {
-            auto& track = m_Tracks.at(*match);
-            UpdateTrack(track, data);
-            return track;
+            auto trackIt = m_Tracks.find(correlationResult.trackId);
+            if (trackIt != m_Tracks.end())
+            {
+                UpdateTrack(trackIt->second, data);
+                return trackIt->second;
+            }
         }
 
         auto track = CreateTrack(data);
         m_Tracks.emplace(track.id, track);
         return track;
+    }
+
+    namespace {
+        void RegisterSource(Common::Track& track, Common::SensorType sensorType)
+        {
+            if (std::find(track.sources.begin(), track.sources.end(), sensorType) == track.sources.end())
+                track.sources.push_back(sensorType);
+        }
+
+        void UpdateIdentity(Common::Track& track, const Common::SensorData& data)
+        {
+            if (const auto* adsb = std::get_if<Common::ADSBContact>(&data.payload))
+                track.icao24 = adsb->icao24;
+        }
     }
 
     Common::Track TrackManager::CreateTrack(const Common::SensorData& data)
@@ -57,6 +70,8 @@ namespace Tracking {
         t.trackState = Common::TrackState::Tentative;
         t.updateCount = 1;
         t.lastSensor = data.type;
+        RegisterSource(t, data.type);
+        UpdateIdentity(t, data);
         t.lastUpdate = GetTimestamp(data);
         t.predictedPosition = pos;
         t.history.push_back({ pos, t.lastUpdate });
@@ -72,6 +87,8 @@ namespace Tracking {
         track.position = pos;
         track.velocity = vel;
         track.lastSensor = data.type;
+        RegisterSource(track, data.type);
+        UpdateIdentity(track, data);
         const Common::Timestamp timestamp = GetTimestamp(data);
 
         // Doctrina de estado (prototipo, no doctrina operacional real):

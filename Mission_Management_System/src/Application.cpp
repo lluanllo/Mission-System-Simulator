@@ -3,6 +3,7 @@
 #include <chrono>
 
 #include "sensors/RadarModule.hpp"
+#include "sensors/ADSBModule.hpp"
 #include "fusion/FusionModule.hpp"
 #include "mission/MissionModule.hpp"
 

@@ -22,7 +22,7 @@ namespace Fusion {
 
             Core::ApplicationContext* m_Context = nullptr;
             Tracking::TrackManager m_TrackManager;
-            Tracking::TrackCorrelator m_Correlator{ 5.0 }; // umbral 5 km
+            Tracking::TrackCorrelator m_Correlator{ 0.7 }; // umbral de score
     };
 
 } }

@@ -8,6 +8,7 @@
 #include "common/sensor/RadarContact.hpp"
 #include "tracking/TrackPredictor.hpp"
 #include "tracking/TrackCorrelator.hpp"
+#include "tracking/CorrelationResult.hpp"
 
 namespace Mission_Management {
 namespace Tracking {
@@ -19,7 +20,7 @@ namespace Tracking {
         // correlator decide "¿a qué track?"; el manager decide "¿crear o actualizar?".
         Common::Track Process(
             const Common::SensorData& data,
-            const TrackCorrelator& correlator);
+            const CorrelationResult& correlationResult);
 
         std::vector<Common::Track> PredictWithoutMeasurement(double deltaTime);
 

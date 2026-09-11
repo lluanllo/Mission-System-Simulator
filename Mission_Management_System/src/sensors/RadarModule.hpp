@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/IModule.hpp"
+#include "sensors/SensorModule.hpp"
 #include "core/ApplicationContext.hpp"
 #include <thread>
 #include <atomic>
@@ -8,13 +8,18 @@
 namespace Mission_Management {
 namespace Sensors {
 
-    class RadarModule : public Core::IModule {
+    class RadarModule : public SensorModule {
         public:
             void OnInit(Core::ApplicationContext& context) override;
             void OnStart() override;
             void OnUpdate(double dt) override;
             void OnStop() override;
             void OnShutdown() override;
+
+            Common::SensorType GetSensorType() const override
+            {
+                return Common::SensorType::Radar;
+            }
 
         private:
             Core::ApplicationContext* m_Context = nullptr;

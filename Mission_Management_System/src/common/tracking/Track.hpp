@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstdint>
+#include <optional>
+#include <string>
 #include <vector>
 
 #include "common/data/Position.hpp"
@@ -30,6 +32,9 @@ namespace Common {
         std::uint32_t updateCount = 0;   // contactos consecutivos asociado -> Confirmed
 
         SensorType lastSensor;
+        std::vector<SensorType> sources;
+
+        std::optional<std::string> icao24;
 
         Timestamp lastUpdate;
 

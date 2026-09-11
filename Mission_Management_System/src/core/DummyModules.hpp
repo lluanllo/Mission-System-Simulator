@@ -4,6 +4,7 @@
 #include "Log/Log.hpp"
 #include "common/sensor/SensorData.hpp"
 #include "common/sensor/RadarContact.hpp"
+#include "common/sensor/SensorObservation.hpp"
 
 namespace Mission_Management {
 
@@ -26,12 +27,12 @@ namespace Mission_Management {
                 radarContact
             };
             
-            const auto& radar = data.payload.radar;
-            
+            const auto& radar = Mission_Management::Common::GetPosition(data);
+
             LOG_SENSOR_INFO("Radar contact received: lat={}, lon={}, alt={}", 
-                            radar.position.latitude,
-                            radar.position.longitude,
-                            radar.position.altitude);
+                            radar.latitude,
+                            radar.longitude,
+                            radar.altitude);
         }
         void OnStop() override { LOG_SENSOR_INFO("OnStop called."); }
         void OnShutdown() override { LOG_SENSOR_INFO("OnShutdown called."); }
